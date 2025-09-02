@@ -1,0 +1,17 @@
+export * from './Empresa';
+export * from './Unidade';
+export * from './Pessoa';
+export * from './Turma';
+export * from './Certificado';
+// export * from './ModeloChecklist';
+// export * from './OS';
+// export * from './Evidencia';
+// export * from './ChangeJournal';
+export * from './User';
+export * from './Asset';
+// export * from './Training';
+// export * from './Matricula';
+// export * from './Presenca';
+// export * from './Avaliacao';
+// export * from './Prova';
+// export * from './Ativo';

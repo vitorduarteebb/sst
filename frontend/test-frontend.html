@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Frontend</title>
+</head>
+<body>
+    <h1>Teste de Login Frontend</h1>
+    <button onclick="testLogin()">Testar Login</button>
+    <button onclick="testUsers()">Testar Usuários</button>
+    <div id="result"></div>
+
+    <script>
+        async function testLogin() {
+            try {
+                const response = await fetch('http://localhost:3001/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@sst.com',
+                        password: 'password'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Salvar token
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    document.getElementById('result').innerHTML = `
+                        <h3>✅ Login OK!</h3>
+                        <p>Token: ${data.access_token ? 'SALVO' : 'NULO'}</p>
+                        <p>User: ${data.user ? 'SALVO' : 'NULO'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <h3>❌ Erro no Login</h3>
+                        <p>Status: ${response.status}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <h3>❌ Erro de Conexão</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        async function testUsers() {
+            try {
+                const token = localStorage.getItem('access_token');
+                
+                if (!token) {
+                    document.getElementById('result').innerHTML = `
+                        <h3>❌ Sem Token</h3>
+                        <p>Faça login primeiro</p>
+                    `;
+                    return;
+                }
+
+                const response = await fetch('http://localhost:3001/api/v1/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <h3>✅ Usuários OK!</h3>
+                        <p>Quantidade: ${data.length}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <h3>❌ Erro nos Usuários</h3>
+                        <p>Status: ${response.status}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <h3>❌ Erro de Conexão</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
