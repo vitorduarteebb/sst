@@ -6,7 +6,7 @@ interface User {
   id: string;
   nome: string;
   email: string;
-  role: 'ADMIN' | 'TECNICO' | 'CLIENTE' | 'AUDITOR';
+  role: string;
   cpf: string;
   telefone?: string;
   empresaId: string;
