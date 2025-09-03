@@ -1,4 +1,4 @@
-version: '3.8'
+﻿version: "3.8"
 
 services:
   postgres:
@@ -13,46 +13,42 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    networks:
-      - sst_network
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: node:18-alpine
     container_name: sst_backend
-    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    ports:
+      - "3001:3001"
     environment:
-      NODE_ENV: production
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
       DATABASE_NAME: sst_db
       DATABASE_USER: sst_user
       DATABASE_PASSWORD: sst_password_2024
-      JWT_SECRET: sua_chave_secreta_muito_segura_aqui_producao
-      PORT: 3001
-    ports:
-      - "3001:3001"
+      JWT_SECRET: sua_chave_secreta_muito_segura_aqui
     depends_on:
       - postgres
-    networks:
-      - sst_network
+    restart: unless-stopped
+    command: sh -lc "unset NODE_ENV; npm ci; npm run build; npm run start:prod"
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: node:18-alpine
     container_name: sst_frontend
-    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=https://145.223.29.139/api/v1
       - NODE_ENV=production
-    ports:
-      - "3000:3000"
     depends_on:
       - backend
-    networks:
-      - sst_network
+    restart: unless-stopped
+    command: sh -lc "npm ci; npm run build; npm start -p 3000 -H 0.0.0.0"
 
   nginx:
     image: nginx:alpine
@@ -67,12 +63,6 @@ services:
     depends_on:
       - frontend
       - backend
-    networks:
-      - sst_network
 
 volumes:
   postgres_data:
-
-networks:
-  sst_network:
-    driver: bridge

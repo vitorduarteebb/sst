@@ -1,267 +1,206 @@
-# 🏭 Sistema SST - Plataforma de Segurança e Saúde no Trabalho
+# Sistema SST Platform
 
-## 📋 Visão Geral
+Sistema completo de gestão de Segurança e Saúde no Trabalho (SST) com frontend Next.js, backend NestJS e PostgreSQL.
 
-Sistema completo para gestão de Segurança e Saúde no Trabalho (SST), incluindo:
-- 👥 Gestão de Usuários
-- 🏢 Gestão de Empresas e Unidades
-- 📋 Ordens de Serviço
-- 🎓 Treinamentos e Certificados
-- 📊 Relatórios e Dashboards
-- 🔐 Autenticação JWT + RBAC
+## 🚀 Deploy Automatizado
 
-## 🚀 Deployment na VPS
+### Pré-requisitos
+- Git instalado
+- Acesso SSH à VPS (145.223.29.139)
+- Docker e Docker Compose instalados na VPS
 
-### 📋 Pré-requisitos
-
-- **VPS**: Ubuntu 25.04 (145.223.29.139)
-- **Recursos**: 1 CPU, 4GB RAM, 50GB SSD
-- **Acesso**: SSH root
-
-### 🔧 Instalação Automatizada
+### Deploy com um comando
 
 ```bash
-# 1. Conectar na VPS
-ssh root@145.223.29.139
-
-# 2. Instalar dependências
-apt update && apt upgrade -y
-apt install -y docker.io docker-compose git curl wget
-
-# 3. Clonar o projeto
-git clone https://github.com/seu-usuario/sst-platform.git
-cd sst-platform
-
-# 4. Executar deployment
+# Execute no diretório raiz do projeto
 chmod +x deploy.sh
 ./deploy.sh
 ```
 
-### 🎯 URLs de Acesso
+O script irá:
+1. ✅ Commit automático das mudanças
+2. ✅ Push para o repositório
+3. ✅ Backup do sistema atual na VPS
+4. ✅ Limpeza de containers antigos
+5. ✅ Build e deploy dos novos containers
+6. ✅ Configuração de SSL e firewall
+7. ✅ Testes de conectividade
+8. ✅ Verificação de logs
 
-- **🌐 Frontend**: https://145.223.29.139
-- **🔧 Backend API**: https://145.223.29.139/api/v1
-- **📚 Swagger**: https://145.223.29.139/api/v1/docs
+### Deploy Manual
 
-### 🔐 Credenciais Padrão
+Se preferir fazer o deploy manualmente:
 
-| Usuário | Email | Senha | Perfil |
-|---------|-------|-------|--------|
-| Admin | admin@sst.com | password | Administrador |
-| Técnico | tecnico@sst.com | password | Técnico |
-| Cliente | cliente@sst.com | password | Cliente |
+```bash
+# 1. Preparar código local
+git add .
+git commit -m "deploy: preparação para VPS"
+git push origin main
 
-## 🏗️ Arquitetura
+# 2. Conectar na VPS
+ssh root@145.223.29.139
 
+# 3. Na VPS
+cd /root/sst
+git pull origin main
+docker-compose down
+docker system prune -f
+docker-compose build --no-cache
+docker-compose up -d
+
+# 4. Verificar status
+docker ps
+docker logs sst_frontend
+docker logs sst_backend
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │    │   Backend       │    │   Database      │
-│   (Next.js)     │◄──►│   (NestJS)      │◄──►│   (PostgreSQL)  │
-│   Porta 3000    │    │   Porta 3001    │    │   Porta 5432    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         ▲                       ▲
-         │                       │
-         └───────────────────────┘
-                    │
-         ┌─────────────────┐
-         │   Nginx         │
-         │   (Reverse      │
-         │    Proxy)       │
-         │   Porta 80/443  │
-         └─────────────────┘
-```
 
-## 📦 Serviços Docker
+## 🌐 Acesso ao Sistema
 
-| Serviço | Container | Porta | Descrição |
-|---------|-----------|-------|-----------|
-| Frontend | sst_frontend | 3000 | Interface web Next.js |
-| Backend | sst_backend | 3001 | API NestJS |
-| Database | sst_postgres | 5432 | Banco PostgreSQL |
-| Proxy | sst_nginx | 80/443 | Nginx reverse proxy |
+- **Frontend**: https://145.223.29.139
+- **API Backend**: https://145.223.29.139/api/v1
+- **Documentação Swagger**: https://145.223.29.139/api/v1/docs
+
+## 👤 Credenciais de Teste
+
+- **Admin**: admin@sst.com / password
+- **Técnico**: tecnico@sst.com / password  
+- **Cliente**: cliente@sst.com / password
+
+## 📋 Funcionalidades
+
+### Frontend (Next.js 14)
+- ✅ Dashboard interativo
+- ✅ Gestão de usuários
+- ✅ Gestão de certificados
+- ✅ Gestão de treinamentos
+- ✅ Relatórios
+- ✅ Configurações do sistema
+- ✅ Autenticação JWT
+- ✅ Interface responsiva
+
+### Backend (NestJS)
+- ✅ API RESTful
+- ✅ Autenticação JWT
+- ✅ Controle de acesso por roles
+- ✅ Geração de PDFs
+- ✅ Validação de dados
+- ✅ Documentação Swagger
+- ✅ Health checks
+
+### Infraestrutura
+- ✅ PostgreSQL 15
+- ✅ Nginx como reverse proxy
+- ✅ SSL/TLS configurado
+- ✅ Firewall UFW
+- ✅ Containers Docker
+- ✅ Health checks automáticos
 
 ## 🔧 Comandos Úteis
 
-### 📊 Monitoramento
+### Na VPS
 ```bash
-# Status dos containers
-docker-compose ps
+# Ver status dos containers
+docker ps
 
-# Logs em tempo real
-docker-compose logs -f
+# Ver logs em tempo real
+docker logs -f sst_frontend
+docker logs -f sst_backend
+docker logs -f sst_nginx
 
-# Logs de um serviço específico
-docker-compose logs -f backend
-docker-compose logs -f frontend
-```
+# Reiniciar serviços
+docker-compose restart frontend
+docker-compose restart backend
+docker-compose restart nginx
 
-### 🔄 Gerenciamento
-```bash
-# Reiniciar todos os serviços
-docker-compose restart
-
-# Parar todos os serviços
-docker-compose down
-
-# Rebuild e reiniciar
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-```
-
-### 💾 Backup
-```bash
-# Backup manual
-./backup.sh
-
-# Backup do banco apenas
+# Backup do banco
 docker exec sst_postgres pg_dump -U sst_user sst_db > backup.sql
 
-# Restaurar backup
-docker exec -i sst_postgres psql -U sst_user sst_db < backup.sql
-```
-
-### 🔄 Atualização
-```bash
 # Atualizar sistema
-./update.sh
-
-# Ou manualmente
+cd /root/sst
 git pull origin main
 docker-compose down
 docker-compose build --no-cache
 docker-compose up -d
 ```
 
-## 🛡️ Segurança
-
-### 🔐 SSL/TLS
-- Certificado SSL self-signed configurado
-- Redirecionamento HTTP → HTTPS
-- Headers de segurança configurados
-
-### 🔥 Firewall
-- UFW configurado automaticamente
-- Portas abertas: 22 (SSH), 80 (HTTP), 443 (HTTPS)
-- Rate limiting configurado
-
-### 📊 Monitoramento
-- Health checks configurados
-- Logs centralizados
-- Backup automático diário
-
-## 🐛 Troubleshooting
-
-### Problemas Comuns
-
-#### 1. Container não inicia
+### Desenvolvimento Local
 ```bash
-# Verificar logs
-docker-compose logs [servico]
+# Frontend
+cd frontend
+npm install
+npm run dev
 
-# Verificar recursos
-docker stats
+# Backend
+cd backend
+npm install
+npm run start:dev
 
-# Reiniciar container
-docker-compose restart [servico]
+# Banco de dados
+docker run -d --name postgres -e POSTGRES_DB=sst_db -e POSTGRES_USER=sst_user -e POSTGRES_PASSWORD=sst_password_2024 -p 5432:5432 postgres:15-alpine
 ```
 
-#### 2. Banco não conecta
-```bash
-# Verificar se PostgreSQL está rodando
-docker-compose exec postgres pg_isready
+## 📁 Estrutura do Projeto
 
-# Verificar logs do banco
-docker-compose logs postgres
-
-# Testar conexão
-docker-compose exec postgres psql -U sst_user -d sst_db
+```
+sst/
+├── frontend/                 # Next.js 14
+│   ├── src/
+│   │   ├── app/             # App Router
+│   │   ├── components/       # Componentes React
+│   │   ├── contexts/        # Context API
+│   │   ├── services/        # Serviços de API
+│   │   └── types/           # Tipos TypeScript
+│   ├── Dockerfile
+│   └── next.config.js
+├── backend/                  # NestJS
+│   ├── src/
+│   │   ├── modules/         # Módulos da aplicação
+│   │   ├── auth/            # Autenticação
+│   │   ├── common/          # Utilitários
+│   │   └── main.ts
+│   └── Dockerfile
+├── nginx/                    # Configuração Nginx
+│   ├── nginx.conf
+│   └── ssl/                 # Certificados SSL
+├── docker-compose.yml       # Orquestração
+├── deploy.sh               # Script de deploy
+└── README.md
 ```
 
-#### 3. Frontend não carrega
-```bash
-# Verificar se frontend está rodando
-curl http://localhost:3000
+## 🛠️ Tecnologias
 
-# Verificar logs
-docker-compose logs frontend
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend**: NestJS, TypeScript, JWT, Passport
+- **Banco**: PostgreSQL 15
+- **Proxy**: Nginx
+- **Containerização**: Docker, Docker Compose
+- **Deploy**: VPS Ubuntu 25.04
 
-# Verificar nginx
-docker-compose logs nginx
-```
+## 🔒 Segurança
 
-#### 4. API não responde
-```bash
-# Testar endpoint de health
-curl http://localhost:3001/api/v1/health
+- ✅ Autenticação JWT
+- ✅ Controle de acesso por roles
+- ✅ HTTPS/SSL configurado
+- ✅ Firewall UFW ativo
+- ✅ Validação de dados
+- ✅ Sanitização de inputs
 
-# Verificar logs do backend
-docker-compose logs backend
+## 📊 Monitoramento
 
-# Verificar variáveis de ambiente
-docker-compose exec backend env
-```
+- ✅ Health checks automáticos
+- ✅ Logs estruturados
+- ✅ Métricas de containers
+- ✅ Backup automático configurado
 
-## 📈 Monitoramento e Logs
+## 🆘 Suporte
 
-### 📊 Métricas
-- CPU, RAM e disco monitorados
-- Logs centralizados em `/var/log/nginx/`
-- Health checks automáticos
+Em caso de problemas:
 
-### 📋 Logs Importantes
-```bash
-# Logs do Nginx
-tail -f /var/log/nginx/access.log
-tail -f /var/log/nginx/error.log
+1. Verifique os logs: `docker logs sst_frontend`
+2. Teste conectividade: `curl https://145.223.29.139`
+3. Verifique status: `docker ps`
+4. Reinicie serviços: `docker-compose restart`
 
-# Logs dos containers
-docker-compose logs -f
+## 📝 Licença
 
-# Logs do sistema
-journalctl -u sst-monitor -f
-```
-
-## 🔄 CI/CD
-
-### 📦 Deploy Automatizado
-O script `deploy.sh` automatiza:
-- ✅ Instalação de dependências
-- ✅ Configuração de SSL
-- ✅ Build das imagens Docker
-- ✅ Configuração do firewall
-- ✅ Configuração de backup
-- ✅ Configuração de monitoramento
-
-### 🔄 Atualizações
-```bash
-# Atualização automática
-./update.sh
-
-# Ou via Git
-git pull origin main
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-```
-
-## 📞 Suporte
-
-### 🆘 Contatos
-- **Email**: suporte@sst.com
-- **Telefone**: (11) 99999-9999
-- **Documentação**: https://145.223.29.139/api/v1/docs
-
-### 🐛 Reportar Bugs
-1. Verificar logs: `docker-compose logs`
-2. Verificar status: `docker-compose ps`
-3. Coletar informações do sistema
-4. Abrir issue no GitHub
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
----
-
-**🎉 Sistema SST - Deployado com sucesso na VPS!**
+Este projeto é privado e de uso interno da empresa.

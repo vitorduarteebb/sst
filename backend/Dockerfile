@@ -7,8 +7,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including dev) for build
+RUN npm ci
 
 # Copy source code
 COPY . .
@@ -17,33 +17,30 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:18-alpine
+FROM node:18-alpine AS runner
 
 WORKDIR /app
 
+ENV NODE_ENV=production
+
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nestjs -u 1001
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nestjs
 
 # Copy package files
-COPY package*.json ./
-
-# Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
-
-# Copy built application
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
 
 # Change ownership
-RUN chown -R nestjs:nodejs /app
 USER nestjs
 
 # Expose port
 EXPOSE 3001
 
-# Health check
+# Health check (uses busybox wget available in alpine)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node dist/health-check.js
+  CMD curl -f http://localhost:3001/api/v1/health || exit 1
 
 # Start the application
 CMD ["node", "dist/main.js"]
