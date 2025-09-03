@@ -27,6 +27,10 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
+# Create uploads directory with correct permissions
+RUN mkdir -p /app/uploads/certificados && \
+    chown -R nestjs:nodejs /app/uploads
+
 # Copy package files
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
