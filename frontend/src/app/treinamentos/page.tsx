@@ -635,6 +635,8 @@ export default function TreinamentosPage() {
                   horarioInicio: formData.get('horarioInicio') as string,
                   horarioFim: formData.get('horarioFim') as string,
                   vagas: parseInt(formData.get('vagas') as string),
+                  vagasOcupadas: 0,
+                  status: 'agendado' as const,
                   valor: parseFloat(formData.get('valor') as string),
                   observacoes: formData.get('observacoes') as string,
                   materiais: formData.get('materiais') ? (formData.get('materiais') as string).split('\n').filter(item => item.trim()) : []
