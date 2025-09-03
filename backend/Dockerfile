@@ -29,7 +29,8 @@ RUN adduser --system --uid 1001 nestjs
 
 # Create uploads directory with correct permissions
 RUN mkdir -p /app/uploads/certificados && \
-    chown -R nestjs:nodejs /app/uploads
+    chown -R nestjs:nodejs /app/uploads && \
+    chmod -R 755 /app/uploads
 
 # Copy package files
 COPY --from=builder /app/dist ./dist
