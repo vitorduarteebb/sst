@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://145.223.29.139/api/v1';
 
 // Interfaces
 export interface LoginData {
@@ -103,48 +103,87 @@ export const authService = {
       console.error('Erro no logout:', error);
     } finally {
       localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
     }
   },
 
-  // Validar token
-  async validateToken(): Promise<boolean> {
+  // Verificar token
+  async verifyToken(): Promise<boolean> {
     try {
-      const response = await fetch(`${API_URL}/auth/validate`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-      return response.ok;
+      const token = localStorage.getItem('access_token');
+      if (!token) return false;
+
+      await makeRequest('/auth/verify');
+      return true;
     } catch (error) {
+      console.error('Token inválido:', error);
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
       return false;
     }
   },
 
-  // Obter perfil do usuário
-  async getProfile(): Promise<any> {
+  // Obter usuário atual
+  async getCurrentUser() {
     try {
-      return await makeRequest('/auth/profile');
+      const user = await makeRequest('/auth/me');
+      return user;
     } catch (error) {
-      console.error('Erro ao obter perfil:', error);
+      console.error('Erro ao obter usuário:', error);
       throw error;
     }
   },
 
-  // Renovar token
-  async refreshToken(refreshToken: string): Promise<AuthResponse> {
+  // Atualizar perfil
+  async updateProfile(userData: Partial<AuthResponse['user']>): Promise<AuthResponse['user']> {
     try {
-      const data = await makeRequest('/auth/refresh', {
-        method: 'POST',
-        body: JSON.stringify({ refreshToken }),
+      const data = await makeRequest('/auth/profile', {
+        method: 'PUT',
+        body: JSON.stringify(userData),
       });
       return data;
     } catch (error) {
-      console.error('Erro ao renovar token:', error);
+      console.error('Erro ao atualizar perfil:', error);
       throw error;
     }
   },
-};
 
-export default authService;
+  // Alterar senha
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    try {
+      await makeRequest('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+    } catch (error) {
+      console.error('Erro ao alterar senha:', error);
+      throw error;
+    }
+  },
+
+  // Recuperar senha
+  async forgotPassword(email: string): Promise<void> {
+    try {
+      await makeRequest('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+    } catch (error) {
+      console.error('Erro ao solicitar recuperação de senha:', error);
+      throw error;
+    }
+  },
+
+  // Redefinir senha
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    try {
+      await makeRequest('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, newPassword }),
+      });
+    } catch (error) {
+      console.error('Erro ao redefinir senha:', error);
+      throw error;
+    }
+  }
+};
