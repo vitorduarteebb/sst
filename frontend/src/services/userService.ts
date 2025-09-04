@@ -1,5 +1,3 @@
-import { User, CreateUserData, UpdateUserData } from '../types/user';
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://145.223.29.139/api/v1';
 
 // Interfaces
