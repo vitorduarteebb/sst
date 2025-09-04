@@ -51,10 +51,7 @@ export default function UsersPage() {
       try {
         console.log('👥 UsersPage - Iniciando carregamento de usuários...');
         setLoading(true);
-        const data = await userService.getUsers({
-          status: statusFilter !== 'todos' ? statusFilter : undefined,
-          search: searchTerm || undefined
-        });
+        const data = await userService.getUsers();
         console.log('✅ UsersPage - Usuários carregados:', data);
         setUsers(data);
         setError(null);
