@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
-import userService from '../../services/userService';
+import { userService } from '../../services/userService';
 import { User, CreateUserData, UpdateUserData } from '../../types/user';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
