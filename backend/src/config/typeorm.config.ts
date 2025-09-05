@@ -16,8 +16,7 @@ export const createTypeOrmConfig = (configService: ConfigService): TypeOrmModule
       
       // Entidades
       entities: [
-        'src/entities/**/*.ts',
-        'dist/entities/**/*.js'
+        'src/entities/**/*.ts'
       ],
       
       // Migrações
@@ -45,8 +44,7 @@ export const createTypeOrmConfig = (configService: ConfigService): TypeOrmModule
       
       // Entidades
       entities: [
-        'src/entities/**/*.ts',
-        'dist/entities/**/*.js'
+        'src/entities/**/*.ts'
       ],
       
       // Migrações
