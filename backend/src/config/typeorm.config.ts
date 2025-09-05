@@ -59,6 +59,7 @@ export const createTypeOrmConfig = (configService: ConfigService): TypeOrmModule
       // Configurações de desenvolvimento
       synchronize: true,
       logging: true,
+      ssl: false,
     };
   }
 };
