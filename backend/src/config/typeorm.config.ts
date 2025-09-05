@@ -29,9 +29,7 @@ export const createTypeOrmConfig = (configService: ConfigService): TypeOrmModule
       // Configurações de produção
       synchronize: true, // Temporariamente true para criar tabelas
       logging: true,
-      ssl: {
-        rejectUnauthorized: false
-      },
+      ssl: false, // Desabilitar SSL para conexão local
       
       // Pool de conexões
       extra: {
