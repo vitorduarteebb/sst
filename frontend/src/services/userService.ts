@@ -49,17 +49,26 @@ async function makeRequest(url: string, options: RequestInit = {}) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  console.log('🌐 Fazendo requisição para:', `${API_URL}${url}`);
+  console.log('📋 Headers:', headers);
+  console.log('📦 Body:', options.body);
+
   const response = await fetch(`${API_URL}${url}`, {
     ...options,
     headers,
   });
 
+  console.log('📡 Resposta recebida:', response.status, response.statusText);
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    console.error('❌ Erro na requisição:', errorData);
     throw new Error(`HTTP ${response.status}: ${errorData.message || 'Erro na requisição'}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log('✅ Dados recebidos:', data);
+  return data;
 }
 
 // Serviço de usuários
