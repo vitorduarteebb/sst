@@ -18,7 +18,7 @@ export interface User {
 export interface CreateUserData {
   nome: string;
   email: string;
-  password: string;
+  password?: string;
   cpf: string;
   telefone?: string;
   role: string;
