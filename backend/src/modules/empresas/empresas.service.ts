@@ -4,36 +4,93 @@ import { Repository } from 'typeorm';
 import { Empresa } from '../../entities/Empresa';
 
 export interface CreateEmpresaDto {
-  nome: string;
+  razaoSocial: string;
+  nomeFantasia: string;
   cnpj: string;
-  endereco?: string;
-  cidade?: string;
-  estado?: string;
-  telefone?: string;
-  email?: string;
+  inscricaoEstadual?: string;
+  inscricaoMunicipal?: string;
+  endereco: {
+    cep: string;
+    logradouro: string;
+    numero: string;
+    complemento?: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+    pais: string;
+  };
+  contato: {
+    telefone: string;
+    email: string;
+    website?: string;
+  };
+  responsavelTecnico: {
+    nome: string;
+    crea?: string;
+    telefone: string;
+    email: string;
+  };
 }
 
 export interface UpdateEmpresaDto {
-  nome?: string;
+  razaoSocial?: string;
+  nomeFantasia?: string;
   cnpj?: string;
-  endereco?: string;
-  cidade?: string;
-  estado?: string;
-  telefone?: string;
-  email?: string;
-  ativo?: boolean;
+  inscricaoEstadual?: string;
+  inscricaoMunicipal?: string;
+  endereco?: {
+    cep?: string;
+    logradouro?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    cidade?: string;
+    estado?: string;
+    pais?: string;
+  };
+  contato?: {
+    telefone?: string;
+    email?: string;
+    website?: string;
+  };
+  responsavelTecnico?: {
+    nome?: string;
+    crea?: string;
+    telefone?: string;
+    email?: string;
+  };
+  status?: 'ativa' | 'inativa' | 'suspensa';
 }
 
 export class EmpresaResponseDto {
   id: string;
-  nome: string;
+  razaoSocial: string;
+  nomeFantasia: string;
   cnpj: string;
-  endereco?: string;
-  cidade?: string;
-  estado?: string;
-  telefone?: string;
-  email?: string;
-  ativo: boolean;
+  inscricaoEstadual?: string;
+  inscricaoMunicipal?: string;
+  endereco: {
+    cep: string;
+    logradouro: string;
+    numero: string;
+    complemento?: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+    pais: string;
+  };
+  contato: {
+    telefone: string;
+    email: string;
+    website?: string;
+  };
+  responsavelTecnico: {
+    nome: string;
+    crea?: string;
+    telefone: string;
+    email: string;
+  };
+  status: 'ativa' | 'inativa' | 'suspensa';
   createdAt: string;
   updatedAt: string;
 }
@@ -71,8 +128,27 @@ export class EmpresasService {
     }
 
     const empresa = this.empresaRepository.create({
-      ...createEmpresaDto,
-      ativo: true
+      razaoSocial: createEmpresaDto.razaoSocial,
+      nomeFantasia: createEmpresaDto.nomeFantasia,
+      cnpj: createEmpresaDto.cnpj,
+      inscricaoEstadual: createEmpresaDto.inscricaoEstadual,
+      inscricaoMunicipal: createEmpresaDto.inscricaoMunicipal,
+      cep: createEmpresaDto.endereco.cep,
+      logradouro: createEmpresaDto.endereco.logradouro,
+      numero: createEmpresaDto.endereco.numero,
+      complemento: createEmpresaDto.endereco.complemento,
+      bairro: createEmpresaDto.endereco.bairro,
+      cidade: createEmpresaDto.endereco.cidade,
+      estado: createEmpresaDto.endereco.estado,
+      pais: createEmpresaDto.endereco.pais,
+      telefone: createEmpresaDto.contato.telefone,
+      email: createEmpresaDto.contato.email,
+      website: createEmpresaDto.contato.website,
+      responsavelTecnicoNome: createEmpresaDto.responsavelTecnico.nome,
+      responsavelTecnicoCrea: createEmpresaDto.responsavelTecnico.crea,
+      responsavelTecnicoTelefone: createEmpresaDto.responsavelTecnico.telefone,
+      responsavelTecnicoEmail: createEmpresaDto.responsavelTecnico.email,
+      status: 'ativa'
     });
 
     const savedEmpresa = await this.empresaRepository.save(empresa);
@@ -113,14 +189,33 @@ export class EmpresasService {
   private mapToResponseDto(empresa: Empresa): EmpresaResponseDto {
     return {
       id: empresa.id,
-      nome: empresa.nome,
+      razaoSocial: empresa.razaoSocial,
+      nomeFantasia: empresa.nomeFantasia,
       cnpj: empresa.cnpj,
-      endereco: empresa.endereco,
-      cidade: empresa.cidade,
-      estado: empresa.estado,
-      telefone: empresa.telefone,
-      email: empresa.email,
-      ativo: empresa.ativo,
+      inscricaoEstadual: empresa.inscricaoEstadual,
+      inscricaoMunicipal: empresa.inscricaoMunicipal,
+      endereco: {
+        cep: empresa.cep || '',
+        logradouro: empresa.logradouro || '',
+        numero: empresa.numero || '',
+        complemento: empresa.complemento,
+        bairro: empresa.bairro || '',
+        cidade: empresa.cidade || '',
+        estado: empresa.estado || '',
+        pais: empresa.pais || 'Brasil'
+      },
+      contato: {
+        telefone: empresa.telefone || '',
+        email: empresa.email || '',
+        website: empresa.website
+      },
+      responsavelTecnico: {
+        nome: empresa.responsavelTecnicoNome || '',
+        crea: empresa.responsavelTecnicoCrea,
+        telefone: empresa.responsavelTecnicoTelefone || '',
+        email: empresa.responsavelTecnicoEmail || ''
+      },
+      status: empresa.status,
       createdAt: empresa.createdAt.toISOString(),
       updatedAt: empresa.updatedAt.toISOString()
     };
