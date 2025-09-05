@@ -7,6 +7,7 @@ import { AssinaturasModule } from './modules/assinaturas/assinaturas.module';
 import { AuthModule } from './auth/auth.module';
 import { CertificadosModule } from './modules/certificados/certificados.module';
 import { UsersModule } from './modules/users/users.module';
+import { EmpresasModule } from './modules/empresas/empresas.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UsersModule } from './modules/users/users.module';
     // Módulos da aplicação
     AuthModule, // Módulo de Autenticação JWT
     UsersModule, // Módulo de Usuários
+    EmpresasModule, // Módulo de Empresas
     OrdensServicoSimpleModule, // Módulo de Ordens de Serviço
     AssinaturasModule, // Módulo de Assinaturas Offline
     CertificadosModule, // Módulo de Certificados

@@ -1,4 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Unidade, UnidadeStatus, UnidadeTipo } from '../../entities/Unidade';
 
 export interface UnidadeSimple {
   id: string;
@@ -37,6 +40,11 @@ export interface UnidadeListResponse {
 
 @Injectable()
 export class UnidadesSimpleService {
+  constructor(
+    @InjectRepository(Unidade)
+    private unidadeRepository: Repository<Unidade>,
+  ) {}
+
   private unidades: UnidadeSimple[] = [
     {
       id: '1',
