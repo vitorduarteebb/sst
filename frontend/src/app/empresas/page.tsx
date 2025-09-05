@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
+import { empresaService } from '../../services/empresaService';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon,
@@ -104,11 +105,33 @@ const mockEmpresas: Empresa[] = [
 ];
 
 export default function EmpresasPage() {
-  const [empresas, setEmpresas] = useState<Empresa[]>(mockEmpresas);
+  const [empresas, setEmpresas] = useState<Empresa[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('todos');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingEmpresa, setEditingEmpresa] = useState<Empresa | null>(null);
+
+  // Carregar empresas do backend
+  useEffect(() => {
+    loadEmpresas();
+  }, []);
+
+  const loadEmpresas = async () => {
+    try {
+      setLoading(true);
+      console.log('🔍 EmpresasPage - Carregando empresas...');
+      const response = await empresaService.getEmpresas();
+      console.log('✅ EmpresasPage - Empresas carregadas:', response);
+      setEmpresas(response.empresas || []);
+    } catch (error) {
+      console.error('❌ EmpresasPage - Erro ao carregar empresas:', error);
+      // Fallback para dados mock em caso de erro
+      setEmpresas(mockEmpresas);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredEmpresas = empresas.filter(empresa => {
     const matchesSearch = empresa.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -133,9 +156,18 @@ export default function EmpresasPage() {
     setEditingEmpresa(null);
   };
 
-  const handleDeleteEmpresa = (empresaId: string) => {
+  const handleDeleteEmpresa = async (empresaId: string) => {
     if (confirm('Tem certeza que deseja excluir esta empresa?')) {
-      setEmpresas(empresas.filter(empresa => empresa.id !== empresaId));
+      try {
+        console.log('🗑️ EmpresasPage - Excluindo empresa:', empresaId);
+        await empresaService.deleteEmpresa(empresaId);
+        console.log('✅ EmpresasPage - Empresa excluída com sucesso');
+        // Recarregar a lista após exclusão
+        await loadEmpresas();
+      } catch (error) {
+        console.error('❌ EmpresasPage - Erro ao excluir empresa:', error);
+        alert('Erro ao excluir empresa. Tente novamente.');
+      }
     }
   };
 
@@ -188,8 +220,13 @@ export default function EmpresasPage() {
         </div>
 
         {/* Companies Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEmpresas.map((empresa) => (
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-gray-500">Carregando empresas...</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredEmpresas.map((empresa) => (
             <div key={empresa.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
@@ -269,7 +306,8 @@ export default function EmpresasPage() {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
 
         {/* Empty State */}
         {filteredEmpresas.length === 0 && (
