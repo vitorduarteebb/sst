@@ -24,7 +24,7 @@ export interface UpdateEmpresaDto {
   ativo?: boolean;
 }
 
-export interface EmpresaResponseDto {
+export class EmpresaResponseDto {
   id: string;
   nome: string;
   cnpj: string;

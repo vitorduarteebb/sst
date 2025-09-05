@@ -2,10 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString, IsOptional, IsEnum, IsBoolean } from 'class-validator';
 
 export enum UserRole {
-  ADMIN = 'ADMIN',
-  TECNICO = 'TECNICO',
-  CLIENTE = 'CLIENTE',
-  AUDITOR = 'AUDITOR',
+  ADMIN = 'admin',
+  TECNICO = 'tecnico',
+  AUDITOR = 'auditor',
+  USER = 'user',
 }
 
 export enum UserStatus {

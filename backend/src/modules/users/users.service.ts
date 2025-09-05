@@ -161,7 +161,7 @@ export class UsersService {
       email: user.email,
       cpf: user.cpf,
       telefone: user.telefone,
-      role: user.role,
+      role: user.role as any,
       ativo: user.ativo,
       empresaId: user.empresaId,
       unidadeId: user.unidadeId,

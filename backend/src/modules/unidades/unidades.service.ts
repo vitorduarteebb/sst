@@ -23,7 +23,7 @@ export interface UpdateUnidadeDto {
   empresaId?: string;
 }
 
-export interface UnidadeResponseDto {
+export class UnidadeResponseDto {
   id: string;
   nome: string;
   endereco?: string;
