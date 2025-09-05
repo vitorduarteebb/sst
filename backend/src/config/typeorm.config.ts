@@ -30,9 +30,8 @@ export const createTypeOrmConfig = (configService: ConfigService): TypeOrmModule
       synchronize: true, // Temporariamente true para criar tabelas
       logging: true,
       ssl: false, // Desabilitar SSL para conexão local
-      
-      // Pool de conexões
       extra: {
+        ssl: false,
         connectionLimit: 20,
         acquireTimeout: 60000,
         timeout: 60000,
