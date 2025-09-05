@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
+import { DatabaseModule } from './database/database.module';
 import { OrdensServicoSimpleModule } from './modules/ordens-servico/ordens-servico-simple.module';
 import { AssinaturasModule } from './modules/assinaturas/assinaturas.module';
 import { AuthModule } from './auth/auth.module';
@@ -13,6 +14,9 @@ import { UsersModule } from './modules/users/users.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
+    // Banco de dados
+    DatabaseModule,
 
     // Módulos da aplicação
     AuthModule, // Módulo de Autenticação JWT

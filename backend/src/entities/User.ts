@@ -1,16 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 export enum UserRole {
-  ADMIN = 'ADMIN',
-  MANAGER = 'MANAGER',
-  USER = 'USER',
-  VIEWER = 'VIEWER'
-}
-
-export enum UserStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  SUSPENDED = 'SUSPENDED'
+  ADMIN = 'admin',
+  TECNICO = 'tecnico',
+  AUDITOR = 'auditor',
+  USER = 'user'
 }
 
 @Entity('users')
@@ -19,10 +13,7 @@ export class User {
   id: string;
 
   @Column({ length: 100 })
-  firstName: string;
-
-  @Column({ length: 100 })
-  lastName: string;
+  nome: string;
 
   @Column({ unique: true })
   email: string;
@@ -34,13 +25,13 @@ export class User {
   password: string;
 
   @Column({ length: 20, nullable: true })
-  phone?: string;
+  telefone?: string;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
 
-  @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
-  status: UserStatus;
+  @Column({ default: true })
+  ativo: boolean;
 
   @Column({ nullable: true })
   empresaId?: string;
@@ -48,31 +39,9 @@ export class User {
   @Column({ nullable: true })
   unidadeId?: string;
 
-  @Column({ type: 'simple-array', nullable: true })
-  permissions: string[];
-
-  @Column({ nullable: true })
-  lastLoginAt?: Date;
-
-  @Column({ nullable: true })
-  passwordChangedAt?: Date;
-
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // Métodos
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName}`;
-  }
-
-  isActive(): boolean {
-    return this.status === UserStatus.ACTIVE;
-  }
-
-  hasPermission(permission: string): boolean {
-    return this.permissions?.includes(permission) || this.role === UserRole.ADMIN;
-  }
 }

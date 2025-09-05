@@ -24,11 +24,11 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      DATABASE_HOST: postgres
-      DATABASE_PORT: 5432
-      DATABASE_NAME: sst_db
-      DATABASE_USER: sst_user
-      DATABASE_PASSWORD: sst_password_2024
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: sst_db
+      DB_USERNAME: sst_user
+      DB_PASSWORD: sst_password_2024
       JWT_SECRET: sua_chave_secreta_muito_segura_aqui_producao
       PORT: 3001
     ports:

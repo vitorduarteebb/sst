@@ -1,116 +1,77 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto, UserResponseDto, UserRole, UserStatus } from './dto/user.dto';
-
-// Mock data para demonstração
-const mockUsers: UserResponseDto[] = [
-  {
-    id: '1',
-    nome: 'João Silva',
-    email: 'joao.silva@empresa.com',
-    cpf: '123.456.789-00',
-    telefone: '(11) 99999-9999',
-    role: UserRole.TECNICO,
-    ativo: true,
-    empresaId: '1',
-    unidadeId: '1',
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z'
-  },
-  {
-    id: '2',
-    nome: 'Maria Santos',
-    email: 'maria.santos@empresa.com',
-    cpf: '987.654.321-00',
-    telefone: '(11) 88888-8888',
-    role: UserRole.ADMIN,
-    ativo: true,
-    empresaId: '1',
-    unidadeId: '1',
-    createdAt: '2024-01-10T10:00:00Z',
-    updatedAt: '2024-01-10T10:00:00Z'
-  },
-  {
-    id: '3',
-    nome: 'Pedro Oliveira',
-    email: 'pedro.oliveira@empresa.com',
-    cpf: '456.789.123-00',
-    telefone: '(11) 77777-7777',
-    role: UserRole.AUDITOR,
-    ativo: false,
-    empresaId: '2',
-    unidadeId: '2',
-    createdAt: '2024-01-05T10:00:00Z',
-    updatedAt: '2024-01-05T10:00:00Z'
-  }
-];
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User, UserRole } from '../../entities/User';
+import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
-  private users = [...mockUsers];
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
 
   async findAll(filters: any = {}): Promise<UserResponseDto[]> {
     console.log('🔍 UsersService - findAll chamado com filtros:', filters);
     
-    let filteredUsers = [...this.users];
+    const queryBuilder = this.userRepository.createQueryBuilder('user');
 
     // Aplicar filtros
     if (filters.status && filters.status !== 'todos') {
       const isAtivo = filters.status === 'ativo';
-      filteredUsers = filteredUsers.filter(user => user.ativo === isAtivo);
+      queryBuilder.andWhere('user.ativo = :ativo', { ativo: isAtivo });
     }
 
     if (filters.role) {
-      filteredUsers = filteredUsers.filter(user => user.role === filters.role);
+      queryBuilder.andWhere('user.role = :role', { role: filters.role });
     }
 
     if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      filteredUsers = filteredUsers.filter(user => 
-        user.nome.toLowerCase().includes(searchTerm) ||
-        user.email.toLowerCase().includes(searchTerm) ||
-        (user.cpf && user.cpf.includes(searchTerm))
+      queryBuilder.andWhere(
+        '(LOWER(user.nome) LIKE LOWER(:search) OR LOWER(user.email) LIKE LOWER(:search) OR user.cpf LIKE :search)',
+        { search: `%${filters.search}%` }
       );
     }
 
     if (filters.empresaId) {
-      filteredUsers = filteredUsers.filter(user => user.empresaId === filters.empresaId);
+      queryBuilder.andWhere('user.empresaId = :empresaId', { empresaId: filters.empresaId });
     }
 
     if (filters.unidadeId) {
-      filteredUsers = filteredUsers.filter(user => user.unidadeId === filters.unidadeId);
+      queryBuilder.andWhere('user.unidadeId = :unidadeId', { unidadeId: filters.unidadeId });
     }
 
-    console.log('✅ UsersService - findAll retornou:', filteredUsers.length, 'usuários');
-    return filteredUsers;
+    const users = await queryBuilder.getMany();
+    console.log('✅ UsersService - findAll retornou:', users.length, 'usuários');
+    return users.map(user => this.mapToResponseDto(user));
   }
 
   async findOne(id: string): Promise<UserResponseDto> {
-    const user = this.users.find(user => user.id === id);
+    const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
-    return user;
+    return this.mapToResponseDto(user);
   }
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     console.log('🔍 UsersService - create chamado com dados:', createUserDto);
     
     // Verificar se email já existe
-    const existingUser = this.users.find(user => user.email === createUserDto.email);
+    const existingUser = await this.userRepository.findOne({ where: { email: createUserDto.email } });
     if (existingUser) {
       throw new BadRequestException('Email já está em uso');
     }
 
     // Verificar se CPF já existe (se fornecido)
     if (createUserDto.cpf) {
-      const existingCpf = this.users.find(user => user.cpf === createUserDto.cpf);
+      const existingCpf = await this.userRepository.findOne({ where: { cpf: createUserDto.cpf } });
       if (existingCpf) {
         throw new BadRequestException('CPF já está em uso');
       }
     }
 
-    const newUser: UserResponseDto = {
-      id: Date.now().toString(),
+    const user = this.userRepository.create({
       nome: createUserDto.nome,
       email: createUserDto.email,
       cpf: createUserDto.cpf,
@@ -119,67 +80,61 @@ export class UsersService {
       ativo: true,
       empresaId: createUserDto.empresaId,
       unidadeId: createUserDto.unidadeId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+      password: createUserDto.password || '123456' // Senha padrão
+    });
 
-    this.users.push(newUser);
-    console.log('✅ UsersService - create retornou:', newUser);
-    return newUser;
+    const savedUser = await this.userRepository.save(user);
+    console.log('✅ UsersService - create retornou:', savedUser);
+    return this.mapToResponseDto(savedUser);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
-    const userIndex = this.users.findIndex(user => user.id === id);
-    if (userIndex === -1) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
 
     // Verificar se email já existe (se estiver sendo alterado)
     if (updateUserDto.email) {
-      const existingUser = this.users.find(user => 
-        user.email === updateUserDto.email && user.id !== id
-      );
-      if (existingUser) {
+      const existingUser = await this.userRepository.findOne({ 
+        where: { email: updateUserDto.email } 
+      });
+      if (existingUser && existingUser.id !== id) {
         throw new BadRequestException('Email já está em uso');
       }
     }
 
     // Verificar se CPF já existe (se estiver sendo alterado)
     if (updateUserDto.cpf) {
-      const existingCpf = this.users.find(user => 
-        user.cpf === updateUserDto.cpf && user.id !== id
-      );
-      if (existingCpf) {
+      const existingCpf = await this.userRepository.findOne({ 
+        where: { cpf: updateUserDto.cpf } 
+      });
+      if (existingCpf && existingCpf.id !== id) {
         throw new BadRequestException('CPF já está em uso');
       }
     }
 
-    const updatedUser = {
-      ...this.users[userIndex],
-      ...updateUserDto,
-      updatedAt: new Date().toISOString()
-    };
-
-    this.users[userIndex] = updatedUser;
-    return updatedUser;
+    Object.assign(user, updateUserDto);
+    const updatedUser = await this.userRepository.save(user);
+    return this.mapToResponseDto(updatedUser);
   }
 
   async remove(id: string): Promise<void> {
-    const userIndex = this.users.findIndex(user => user.id === id);
-    if (userIndex === -1) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    this.users.splice(userIndex, 1);
+    await this.userRepository.remove(user);
   }
 
   async checkEmailAvailability(email: string): Promise<{ available: boolean }> {
-    const existingUser = this.users.find(user => user.email === email);
+    const existingUser = await this.userRepository.findOne({ where: { email } });
     return { available: !existingUser };
   }
 
   async checkCpfAvailability(cpf: string): Promise<{ available: boolean }> {
-    const existingCpf = this.users.find(user => user.cpf === cpf);
+    const existingCpf = await this.userRepository.findOne({ where: { cpf } });
     return { available: !existingCpf };
   }
 
@@ -197,5 +152,21 @@ export class UsersService {
 
   async searchUsers(searchTerm: string, filters: any = {}): Promise<UserResponseDto[]> {
     return this.findAll({ ...filters, search: searchTerm });
+  }
+
+  private mapToResponseDto(user: User): UserResponseDto {
+    return {
+      id: user.id,
+      nome: user.nome,
+      email: user.email,
+      cpf: user.cpf,
+      telefone: user.telefone,
+      role: user.role,
+      ativo: user.ativo,
+      empresaId: user.empresaId,
+      unidadeId: user.unidadeId,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString()
+    };
   }
 }
