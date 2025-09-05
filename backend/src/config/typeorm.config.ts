@@ -27,8 +27,8 @@ export const createTypeOrmConfig = (configService: ConfigService): TypeOrmModule
       ],
       
       // Configurações de produção
-      synchronize: false, // Nunca true em produção
-      logging: configService.get('DB_LOGGING', false),
+      synchronize: true, // Temporariamente true para criar tabelas
+      logging: true,
       ssl: {
         rejectUnauthorized: false
       },
